@@ -1,1 +1,0 @@
-# veeamB-R-zabbix-template
