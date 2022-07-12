@@ -1,0 +1,53 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-07-12T07:48:27Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: b5782fbbac8944cea1acb6dadc398548
+      template: 'Veeam Backup'
+      name: 'Veeam Backup'
+      groups:
+        -
+          name: Templates
+      discovery_rules:
+        -
+          uuid: c6c0960222df44afbe9dcbafc34a4d9e
+          name: BackupJobs
+          type: ZABBIX_ACTIVE
+          key: discovery.VeeamJobs
+          delay: 30m
+          lifetime: 1d
+          item_prototypes:
+            -
+              uuid: 737154990c134072babd5f27bb926f34
+              name: '{#JOBNAME} - Last Result'
+              type: ZABBIX_ACTIVE
+              key: 'GetLastResult["{#JOBNAME}"]'
+              delay: 20m
+              history: 60d
+              trends: '0'
+              value_type: TEXT
+              trigger_prototypes:
+                -
+                  uuid: 762dd07d8854436c8fb72c3b6f6df5cd
+                  expression: 'last(/Veeam Backup/GetLastResult["{#JOBNAME}"])="Failed"'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Veeam Backup/GetLastResult["{#JOBNAME}"])="Success"'
+                  name: '{#JOBNAME}: Last result was not successful'
+                  priority: HIGH
+                -
+                  uuid: 8411ab26dd664562a3497ab507f4bf3f
+                  expression: 'last(/Veeam Backup/GetLastResult["{#JOBNAME}"])="Warning"'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/Veeam Backup/GetLastResult["{#JOBNAME}"])="Success"'
+                  name: '{#JOBNAME}: Last result was not successful'
+                  status: DISABLED
+                  priority: WARNING
+          lld_macro_paths:
+            -
+              lld_macro: '{#JOBNAME}'
+              path: $..jobname.first()
